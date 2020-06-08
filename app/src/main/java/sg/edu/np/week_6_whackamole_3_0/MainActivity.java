@@ -13,6 +13,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
+    EditText Username,Password;
+    TextView register;
+    Button Login;
 
     /*
         1. This is the main page for user to log in
@@ -24,10 +27,59 @@ public class MainActivity extends AppCompatActivity {
     private static final String FILENAME = "MainActivity.java";
     private static final String TAG = "Whack-A-Mole3.0!";
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+    Username=findViewById(R.id.Username);
+    Password=findViewById(R.id.password);
+    Login=findViewById(R.id.login);
+    register=findViewById(R.id.Register);
+
+        Login.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String username, password;
+                username = Username.getText().toString().trim();
+                password = Password.getText().toString().trim();
+                Log.v(TAG, FILENAME + ": Logging in with: " + username+ ": " + password);
+                if (username.isEmpty()) {
+                    Log.v(TAG,"Username Required");
+                    Toast.makeText(getApplicationContext(), "Username Required", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (password.isEmpty())//check for empty input
+                {
+                    Log.v(TAG,"Password Required");
+                    Toast.makeText(getApplicationContext(), "Password Required", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if(isValidUser(username, password)==false)
+                {
+                    Toast.makeText(getApplicationContext(),"Login failed",Toast.LENGTH_LONG).show();
+                    Log.v(TAG, FILENAME + ": Invalid user!");
+                }
+                else {
+                    Log.v(TAG, FILENAME + ": Valid User! Logging in");
+                    Toast.makeText(getApplicationContext(),"Login successful",Toast.LENGTH_LONG).show();
+                    Intent in = new Intent(getApplicationContext(), Main3Activity.class);
+                    in.putExtra("Username", username);
+                    startActivity(in);
+                }
+
+            }
+
+        });
+        register.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.v(TAG, FILENAME + ": Create new user!");
+                Intent in = new Intent(getApplicationContext(), Main2Activity.class);
+                startActivity(in);
+            }
+        });
 
         /* Hint:
             This method creates the necessary login inputs and the new user creation ontouch.
@@ -47,14 +99,22 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
 
-    public boolean isValidUser(String userName, String password){
+    public boolean isValidUser(String Name, String password){
 
-        /* HINT:
-            This method is called to access the database and return a true if user is valid and false if not.
-            Log.v(TAG, FILENAME + ": Running Checks..." + dbData.getMyUserName() + ": " + dbData.getMyPassword() +" <--> "+ userName + " " + password);
-            You may choose to use this or modify to suit your design.
-         */
-
+        MyDBHandler dbHandler = new MyDBHandler(this, null, null, 1);
+        UserData userData = dbHandler.findUser(Name);
+        if (userData !=  null)
+        {
+            Log.v(TAG, FILENAME + ": Running Checks..." + userData.getMyUserName() + ": " + userData.getMyPassword() +" <--> "+ Name + " " + password);
+            if (userData.getMyUserName().equals(Name) && userData.getMyPassword().equals(password))
+            {
+                Log.v(TAG, FILENAME + "User has pass validation" );
+                return true;
+            }
+            else{
+                Log.v(TAG, FILENAME + "User has failed validation");
+            }
+        }
+        return false;
     }
-
 }

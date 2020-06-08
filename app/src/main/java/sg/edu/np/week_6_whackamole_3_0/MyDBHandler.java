@@ -7,9 +7,18 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import androidx.appcompat.app.ActionBar;
+
 import java.util.ArrayList;
 
 public class MyDBHandler extends SQLiteOpenHelper {
+    private static final String DATABASE_NAME = "WhackAMole.db";
+    private static final Integer DATABASE_VERSION = 1;
+    public static final String TABLE_USER = "userdata";
+    public static final String COLUMN_USERNAME = "Username";
+    public static final String COLUMN_PASSWORD = "Password";
+    public static final String COLUMN_LEVEL = "Level";
+    public static final String COLUMN_SCORE = "Score";
     /*
         The Database has the following properties:
         1. Database name is WhackAMole.db
@@ -48,6 +57,7 @@ public class MyDBHandler extends SQLiteOpenHelper {
 
     public MyDBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version)
     {
+        super(context, DATABASE_NAME, factory, DATABASE_VERSION);
         /* HINT:
             This is used to init the database.
          */
@@ -55,15 +65,19 @@ public class MyDBHandler extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db)
     {
-        /* HINT:
-            This is triggered on DB creation.
-            Log.v(TAG, "DB Created: " + CREATE_ACCOUNTS_TABLE);
-         */
-
+        String CREATE_USER_TABLE = "CREATE TABLE " + TABLE_USER + "(" +
+                COLUMN_USERNAME + " TEXT," +
+                COLUMN_PASSWORD + " TEXT," +
+                COLUMN_LEVEL + " INTEGER," +
+                COLUMN_SCORE + " INTEGER" + ")";
+        db.execSQL(CREATE_USER_TABLE);
+        Log.v(TAG, "DB Created: " + CREATE_USER_TABLE);
     }
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
     {
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_USER);
+        onCreate(db);
         /* HINT:
             This is triggered if there is a new version found. ALL DATA are replaced and irreversible.
          */
@@ -71,14 +85,52 @@ public class MyDBHandler extends SQLiteOpenHelper {
 
     public void addUser(UserData userData)
     {
-            /* HINT:
-                This adds the user to the database based on the information given.
-                Log.v(TAG, FILENAME + ": Adding data for Database: " + values.toString());
-             */
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_USERNAME, userData.getMyUserName());
+        values.put(COLUMN_PASSWORD, userData.getMyPassword());
+        SQLiteDatabase db = this.getWritableDatabase();
+        for (int i = 0; i < userData.getLevels().size(); i++){
+            values.put(COLUMN_LEVEL, userData.getLevels().get(i));
+            values.put(COLUMN_SCORE, userData.getScores().get(i));
+            db.insert(TABLE_USER, null, values);
+            Log.v(TAG, FILENAME + ": Adding data for Database: " + values.toString());
+        }
+        db.close();
     }
 
     public UserData findUser(String username)
     {
+        String FIND_USER_QUERY = "SELECT * FROM " + TABLE_USER + " WHERE " +  COLUMN_USERNAME + " = \"" + username + "\"";
+        Log.v(TAG, FILENAME + ":Find user from database: " + FIND_USER_QUERY);
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(FIND_USER_QUERY, null);
+
+        UserData userData = new UserData();
+
+        if (cursor.moveToFirst()){
+            userData.setMyUserName(cursor.getString(0));
+            userData.setMyPassword(cursor.getString(1));
+            ArrayList<Integer> levels = new ArrayList<>();
+            ArrayList<Integer> scores = new ArrayList<>();
+
+            do{
+                levels.add(Integer.parseInt(cursor.getString(2)));
+                scores.add(Integer.parseInt(cursor.getString(3)));
+            } while (cursor.moveToNext());
+
+            userData.setLevels(levels);
+            userData.setScores(scores);
+
+            Log.v(TAG, FILENAME + ": QueryData: " + userData.getLevels().toString() + userData.getScores().toString());
+        }
+        else{
+            userData = null;
+            Log.v(TAG, FILENAME + ": No data found!");
+        }
+
+        return userData;
+    }
         /* HINT:
             This finds the user that is specified and returns the data information if it is found.
             If not found, it will return a null.
@@ -99,7 +151,7 @@ public class MyDBHandler extends SQLiteOpenHelper {
                 Log.v(TAG, FILENAME+ ": No data found!");
             }
          */
-    }
+
 
     public boolean deleteAccount(String username) {
         /* HINT:
@@ -107,6 +159,30 @@ public class MyDBHandler extends SQLiteOpenHelper {
             This is not reversible.
             Log.v(TAG, FILENAME + ": Database delete user: " + query);
          */
+        boolean result=false;
+        String DELETE_ACCOUNT_QUERY = "SELECT * FROM " + TABLE_USER + " WHERE " + COLUMN_USERNAME + " = \"" + username + "\"";
+        SQLiteDatabase db = this.getWritableDatabase();
 
+        Cursor cursor = db.rawQuery(DELETE_ACCOUNT_QUERY, null);
+        UserData userData = new UserData();
+
+        if (cursor.moveToFirst()){
+            userData.setMyUserName(cursor.getString(0));
+            db.delete(TABLE_USER, COLUMN_USERNAME + " = ?",
+                    new String[] {
+                            String.valueOf(userData.getMyUserName())
+                    });
+            result = true;
+            Log.v(TAG, FILENAME + ": Database delete user: " + DELETE_ACCOUNT_QUERY);
+        }
+        db.close();
+        return result;
+    }
+    public void updateScore(String username, int level, int score){
+        UserData user = findUser(username);
+        if (user.getScores().get(level-1) < score) {
+            SQLiteDatabase db = this.getWritableDatabase();
+            db.execSQL("UPDATE "+TABLE_USER+" SET score = "+score + " WHERE Username = "+"'"+username+"'"+" AND Level = "+ (level - 1));
+        }
     }
 }
