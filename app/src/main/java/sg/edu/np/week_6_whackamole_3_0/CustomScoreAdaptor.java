@@ -1,8 +1,6 @@
 package sg.edu.np.week_6_whackamole_3_0;
 
-import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -68,8 +66,8 @@ public class CustomScoreAdaptor extends RecyclerView.Adapter<CustomScoreViewHold
             public void onClick(View v) {
                 Intent intent = new Intent(v.getContext(), Main4Activity.class);
                 intent.putExtra("Username",Name);
-                intent.putExtra("Level", String.valueOf(levellist.get(position)));
-                Log.v(TAG, FILENAME+ ": Load level " + position +" for: " + Name);
+                intent.putExtra("Level",levellist.get(position));
+                Log.v(TAG, FILENAME+ ": Load level " + (position+1) +" for: " + Name);
                 v.getContext().startActivity(intent);
             }
         });

@@ -1,7 +1,5 @@
 package sg.edu.np.week_6_whackamole_3_0;
 
-import android.content.Intent;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 

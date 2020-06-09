@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -56,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), "Password Required", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                if(isValidUser(username, password)==false)
+                if(!isValidUser(username, password))
                 {
                     Toast.makeText(getApplicationContext(),"Login failed",Toast.LENGTH_LONG).show();
                     Log.v(TAG, FILENAME + ": Invalid user!");

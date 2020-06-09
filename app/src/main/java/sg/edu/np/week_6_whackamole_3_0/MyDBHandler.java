@@ -178,11 +178,4 @@ public class MyDBHandler extends SQLiteOpenHelper {
         db.close();
         return result;
     }
-    public void updateScore(String username, int level, int score){
-        UserData user = findUser(username);
-        if (user.getScores().get(level-1) < score) {
-            SQLiteDatabase db = this.getWritableDatabase();
-            db.execSQL("UPDATE "+TABLE_USER+" SET score = "+score + " WHERE Username = "+"'"+username+"'"+" AND Level = "+ (level - 1));
-        }
-    }
 }

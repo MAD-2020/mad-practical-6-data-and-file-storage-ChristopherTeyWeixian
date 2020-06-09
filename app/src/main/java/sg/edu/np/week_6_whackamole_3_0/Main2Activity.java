@@ -66,7 +66,7 @@ public class Main2Activity extends AppCompatActivity {
                     finish();
                    }
                     else{
-                        Toast.makeText(Main2Activity.this, "the account existed already.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(Main2Activity.this, "User already exist during new user creation!", Toast.LENGTH_SHORT).show();
                     }
                 }
 
